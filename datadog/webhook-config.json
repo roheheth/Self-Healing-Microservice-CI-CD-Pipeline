@@ -1,0 +1,30 @@
+{
+  "name": "webhook-incident-channel",
+  "url": "https://webhook.site/placeholder-incident-channel",
+  "custom_headers": {
+    "Content-Type": "application/json"
+  },
+  "encode_as": "json",
+  "payload": {
+    "event_type": "$EVENT_TYPE",
+    "title": "$EVENT_TITLE",
+    "monitor_name": "$ALERT_TITLE",
+    "monitor_id": "$ALERT_ID",
+    "status": "$ALERT_STATUS",
+    "date": "$DATE",
+    "link": "$LINK",
+    "scope": "$ALERT_SCOPE",
+    "message": "$TEXT_ONLY_MSG",
+    "service": "self-healing-api",
+    "environment": "dev"
+  },
+  "comments": {
+    "description": "Configurable webhook notification integration for Datadog Monitors.",
+    "production_equivalents": [
+      "Slack Incoming Webhook (e.g., https://hooks.slack.com/services/...)",
+      "PagerDuty Integration (https://events.pagerduty.com/v2/enqueue)",
+      "Opsgenie Webhook Integration",
+      "Mock Receiver (https://webhook.site for demonstration)"
+    ]
+  }
+}

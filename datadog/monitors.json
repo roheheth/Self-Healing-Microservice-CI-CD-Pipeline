@@ -1,0 +1,105 @@
+[
+  {
+    "name": "self-healing-api - p95 latency regression",
+    "type": "metric alert",
+    "query": "avg(last_5m):p95:trace.fastapi.request.duration{service:self-healing-api} > 0.010",
+    "message": "⚠️ p95 latency exceeded 10ms for 5m. See SLO.md Latency SLI (target: 95% < 10ms). @webhook-incident-channel",
+    "tags": [
+      "service:self-healing-api",
+      "tier:2-enhancement",
+      "slo:latency",
+      "env:dev"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.010,
+        "warning": 0.008
+      },
+      "notify_no_data": false,
+      "renotify_interval": 15,
+      "evaluation_delay": 60
+    }
+  },
+  {
+    "name": "self-healing-api - container restart self-heal event",
+    "type": "metric alert",
+    "query": "change(sum(last_5m),last_5m):sum:kubernetes.containers.restarts{kube_container_name:api,service:self-healing-api} > 0",
+    "message": "🔄 Self-healing container restart detected in the last 5 minutes. Verify pod health, liveness probe events, and error logs. @webhook-incident-channel",
+    "tags": [
+      "service:self-healing-api",
+      "tier:2-enhancement",
+      "slo:recovery",
+      "env:dev"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.0
+      },
+      "notify_no_data": false,
+      "renotify_interval": 0,
+      "evaluation_delay": 30
+    }
+  },
+  {
+    "name": "self-healing-api - readiness gate stuck",
+    "type": "metric alert",
+    "query": "avg(last_5m):sum:kubernetes.pods.running{kube_container_name:api} - sum:kubernetes.pods.ready{kube_container_name:api} > 0",
+    "message": "🛑 Pod has remained in not-ready state for >30s beyond the expected 10s warm-up delay. Cold-start or initialization may be stuck. @webhook-incident-channel",
+    "tags": [
+      "service:self-healing-api",
+      "tier:2-enhancement",
+      "type:readiness-gate",
+      "env:dev"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.0
+      },
+      "notify_no_data": false,
+      "renotify_interval": 10,
+      "evaluation_delay": 30
+    }
+  },
+  {
+    "name": "self-healing-api - error budget fast burn (critical)",
+    "type": "metric alert",
+    "query": "avg(last_1h):sum:trace.fastapi.request.errors{service:self-healing-api}.as_count() / sum:trace.fastapi.request.hits{service:self-healing-api}.as_count() > 0.072",
+    "message": "🚨 CRITICAL: Fast error budget burn rate detected (14.4x rate, >5% of monthly budget consumed in 1h). Immediate on-call triage required per SLO.md. @webhook-incident-channel",
+    "tags": [
+      "service:self-healing-api",
+      "tier:2-enhancement",
+      "slo:availability",
+      "severity:critical",
+      "env:dev"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.072
+      },
+      "notify_no_data": false,
+      "renotify_interval": 30,
+      "evaluation_delay": 60
+    }
+  },
+  {
+    "name": "self-healing-api - error budget slow burn (warning)",
+    "type": "metric alert",
+    "query": "avg(last_6h):sum:trace.fastapi.request.errors{service:self-healing-api}.as_count() / sum:trace.fastapi.request.hits{service:self-healing-api}.as_count() > 0.010",
+    "message": "⚠️ WARNING: Slow error budget burn rate detected (6.0x rate, >10% of monthly budget consumed in 6h). Automated ticket logged for SRE investigation per SLO.md. @webhook-incident-channel",
+    "tags": [
+      "service:self-healing-api",
+      "tier:2-enhancement",
+      "slo:availability",
+      "severity:warning",
+      "env:dev"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.010
+      },
+      "notify_no_data": false,
+      "renotify_interval": 60,
+      "evaluation_delay": 120
+    }
+  }
+]

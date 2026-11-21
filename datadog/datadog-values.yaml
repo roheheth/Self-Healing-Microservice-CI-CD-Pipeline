@@ -1,0 +1,35 @@
+# Datadog Helm Chart Values Configuration
+# Install command:
+# helm repo add datadog https://helm.datadoghq.com
+# helm install datadog-agent -f datadog-values.yaml datadog/datadog --set datadog.apiKey=<YOUR_API_KEY>
+
+datadog:
+  clusterName: "sre-portfolio-cluster"
+  site: "datadoghq.com" # Change if using datadoghq.eu, etc.
+  
+  # 1. Enable APM Tracing (essential for Flask auto-instrumentation)
+  apm:
+    portEnabled: true
+    # Expose host port 8126 on the node so the Flask container can route traces via DD_AGENT_HOST (hostIP)
+    hostPort: 8126
+  
+  # 2. Enable Log Collection from containers
+  logs:
+    enabled: true
+    containerCollectAll: true
+  
+  # 3. Enable Process & Container Monitoring
+  processAgent:
+    enabled: true
+    processCollection: true
+  
+  # 4. Enable Live Kubernetes Orchestrator Monitoring
+  orchestratorExplorer:
+    enabled: true
+
+# Use host network for the agent daemonset so the hostPort binding works in local environments
+providers:
+  gke:
+    autopilot: false
+agents:
+  useHostNetwork: true

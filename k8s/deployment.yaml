@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-healing-api
+  labels:
+    app: self-healing-api
+    tags.datadoghq.com/service: self-healing-api
+    tags.datadoghq.com/env: dev
+    tags.datadoghq.com/version: 1.0.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: self-healing-api
+  template:
+    metadata:
+      labels:
+        app: self-healing-api
+        tags.datadoghq.com/service: self-healing-api
+        tags.datadoghq.com/env: dev
+        tags.datadoghq.com/version: 1.0.0
+      annotations:
+        # Datadog Autodiscovery logs configuration
+        ad.datadoghq.com/api.logs: '[{"source": "python", "service": "self-healing-api"}]'
+    spec:
+      containers:
+      - name: api
+        image: self-healing-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+          name: http
+        
+        # Security configuration: run as non-root user (matching Dockerfile)
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        
+        # SRE Best Practice: Define resource constraints to prevent noisy neighbor issue
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        
+        # Liveness Probe: K8s checks this endpoint; if it fails, it restarts the container
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 2
+        
+        # Readiness Probe: K8s checks this; pod doesn't receive traffic until ready
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          failureThreshold: 3
+          timeoutSeconds: 2
+        
+        # Datadog APM & Logs variables
+        env:
+        - name: DD_SERVICE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/env']
+        - name: DD_VERSION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/version']
+        - name: DD_LOGS_INJECTION
+          value: "true"
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP

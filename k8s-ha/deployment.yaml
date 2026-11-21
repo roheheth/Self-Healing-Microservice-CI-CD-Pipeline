@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-healing-api-ha
+  labels:
+    app: self-healing-api-ha
+    tags.datadoghq.com/service: self-healing-api
+    tags.datadoghq.com/env: dev
+    tags.datadoghq.com/version: 1.0.0
+spec:
+  # High-Availability: 3 Replicas
+  replicas: 3
+  
+  # Zero-Downtime Rolling Update Strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Creates at most 1 new pod above replica count during update
+      maxUnavailable: 1  # At most 1 pod unavailable at any point in time
+  
+  selector:
+    matchLabels:
+      app: self-healing-api-ha
+  template:
+    metadata:
+      labels:
+        app: self-healing-api-ha
+        tags.datadoghq.com/service: self-healing-api
+        tags.datadoghq.com/env: dev
+        tags.datadoghq.com/version: 1.0.0
+      annotations:
+        ad.datadoghq.com/api.logs: '[{"source": "python", "service": "self-healing-api"}]'
+    spec:
+      containers:
+      - name: api
+        image: self-healing-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+          name: http
+        
+        # Non-root least privilege security context (matching baseline)
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        
+        # SRE Resource Allocations
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        
+        # Liveness Probe (restarts container on internal deadlock)
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 2
+        
+        # Readiness Probe (holds back traffic during 10s cold-start initialization)
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          failureThreshold: 3
+          timeoutSeconds: 2
+        
+        # Datadog APM & Logs variables
+        env:
+        - name: DD_SERVICE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/env']
+        - name: DD_VERSION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/version']
+        - name: DD_LOGS_INJECTION
+          value: "true"
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: DEMO_VERSION
+          value: "v1"

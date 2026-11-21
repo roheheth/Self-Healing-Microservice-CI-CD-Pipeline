@@ -1,0 +1,85 @@
+{
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+      {
+        "name": "status is 200",
+        "path": "::status is 200",
+        "id": "6210a8cd14cd70477eee5cee62e4d0ec",
+        "passes": 148290,
+        "fails": 0
+      },
+      {
+        "name": "has valid payload",
+        "path": "::has valid payload",
+        "id": "1e7235a82200424597b63f03b41d0637",
+        "passes": 148290,
+        "fails": 0
+      }
+    ]
+  },
+  "metrics": {
+    "http_reqs": {
+      "count": 148290,
+      "rate": 549.22
+    },
+    "http_req_duration": {
+      "avg": 12.41,
+      "min": 2.15,
+      "med": 7.82,
+      "max": 182.40,
+      "p(90)": 18.60,
+      "p(95)": 24.80,
+      "p(99)": 48.90
+    },
+    "http_req_duration{stage:10_vu}": {
+      "avg": 4.12,
+      "min": 2.15,
+      "med": 3.80,
+      "max": 22.10,
+      "p(90)": 5.90,
+      "p(95)": 7.40,
+      "p(99)": 11.20
+    },
+    "http_req_duration{stage:50_vu}": {
+      "avg": 7.84,
+      "min": 2.30,
+      "med": 6.90,
+      "max": 45.20,
+      "p(90)": 11.40,
+      "p(95)": 14.20,
+      "p(99)": 21.80
+    },
+    "http_req_duration{stage:100_vu}": {
+      "avg": 18.90,
+      "min": 3.10,
+      "med": 15.40,
+      "max": 98.30,
+      "p(90)": 28.60,
+      "p(95)": 36.40,
+      "p(99)": 54.20
+    },
+    "http_req_duration{stage:200_vu}": {
+      "avg": 38.60,
+      "min": 4.20,
+      "med": 32.10,
+      "max": 182.40,
+      "p(90)": 58.90,
+      "p(95)": 74.20,
+      "p(99)": 112.50
+    },
+    "http_req_failed": {
+      "passes": 0,
+      "fails": 148290,
+      "value": 0.0
+    },
+    "vus": {
+      "min": 1,
+      "max": 200,
+      "value": 0
+    }
+  }
+}

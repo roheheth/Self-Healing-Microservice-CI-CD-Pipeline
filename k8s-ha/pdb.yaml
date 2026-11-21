@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: self-healing-api-pdb
+  labels:
+    app: self-healing-api-ha
+spec:
+  # High-Availability Rule: Always keep at least 2 of the 3 replicas available during voluntary disruptions
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: self-healing-api-ha

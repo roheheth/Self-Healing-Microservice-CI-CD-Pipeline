@@ -1,0 +1,148 @@
+{
+  "title": "Self-Healing API SRE Dashboard",
+  "description": "Monitors API throughput, latency percentiles, CPU, Memory usage, and system health.",
+  "widgets": [
+    {
+      "id": 1,
+      "definition": {
+        "title": "API Throughput (Request Count)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:trace.fastapi.request.hits{service:self-healing-api}.as_count()",
+            "display_type": "bars",
+            "style": {
+              "palette": "cool",
+              "type": "solid"
+            }
+          }
+        ]
+      },
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 2,
+      "definition": {
+        "title": "API Latency Percentiles (p50, p95, p99)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "p50:trace.fastapi.request.duration{service:self-healing-api}",
+            "display_type": "line",
+            "style": {
+              "palette": "purple",
+              "line_type": "solid",
+              "line_width": "normal"
+            }
+          },
+          {
+            "q": "p95:trace.fastapi.request.duration{service:self-healing-api}",
+            "display_type": "line",
+            "style": {
+              "palette": "orange",
+              "line_type": "dashed",
+              "line_width": "normal"
+            }
+          },
+          {
+            "q": "p99:trace.fastapi.request.duration{service:self-healing-api}",
+            "display_type": "line",
+            "style": {
+              "palette": "red",
+              "line_type": "dotted",
+              "line_width": "thick"
+            }
+          }
+        ]
+      },
+      "layout": {
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 3,
+      "definition": {
+        "title": "Pod CPU Utilization",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:kubernetes.cpu.usage.total{kube_container_name:api} by {pod_name}",
+            "display_type": "line",
+            "style": {
+              "palette": "warm",
+              "line_type": "solid"
+            }
+          }
+        ]
+      },
+      "layout": {
+        "x": 0,
+        "y": 4,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 4,
+      "definition": {
+        "title": "Pod Memory Usage",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:kubernetes.memory.usage{kube_container_name:api} by {pod_name}",
+            "display_type": "line",
+            "style": {
+              "palette": "warm",
+              "line_type": "solid"
+            }
+          }
+        ]
+      },
+      "layout": {
+        "x": 6,
+        "y": 4,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 5,
+      "definition": {
+        "title": "Structured Log Stream",
+        "type": "log_stream",
+        "query": "service:self-healing-api",
+        "columns": [
+          "timestamp",
+          "message",
+          "status",
+          "duration"
+        ],
+        "show_date_column": true,
+        "show_message_column": true,
+        "wrap_logs": true
+      },
+      "layout": {
+        "x": 0,
+        "y": 8,
+        "width": 12,
+        "height": 4
+      }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "dev"
+    }
+  ],
+  "layout_type": "ordered"
+}
